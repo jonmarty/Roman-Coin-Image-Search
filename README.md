@@ -18,9 +18,9 @@ I had recently been looking into convolutional neural networks. I thought this w
 
 In order to set up the application, the images need to be downloaded and their classes determined. The setup.py script in the main directory performs this task. The steps of the setup process are listed below:
 
-'''
+```
 python setup.py
-'''
+```
 
 1. A web scraper looks through the results of queries on coinshome.net, collecting the links to images of coins, putting links into the data/links.txt file
 2. The linked images are downloaded and stored in the Images directory
@@ -30,14 +30,14 @@ python setup.py
 
 A model is trained using keras. To train the model, run the autoencoder.py script.
 
-'''
+```
 python autoencoder.py
-'''
+```
 
 ## Launching Application
 
 To launch the web app, run the web_interface.py script. This script implements a bottle application and uses the previously trained model.
 
-'''
+```
 python web_interface.py
-'''
+```
