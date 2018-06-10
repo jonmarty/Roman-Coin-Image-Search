@@ -16,7 +16,7 @@ I had recently been looking into convolutional neural networks. I thought this w
 
 ## Setup
 
-In order to set up the application, the images and their classes need to be downloaded and determined. The setup.py script in the main directory performs this task. The steps of the setup process are listed below:
+In order to set up the application, the images need to be downloaded and their classes determined. The setup.py script in the main directory performs this task. The steps of the setup process are listed below:
 
 python setup.py
 
