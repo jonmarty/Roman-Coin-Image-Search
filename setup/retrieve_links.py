@@ -39,6 +39,6 @@ for country in templates.keys():
                 continue
         if f == 0:
             break
-out = open("links.txt", "w")
+out = open("data/links.txt", "w")
 out.write("\n".join(links))
 out.close()

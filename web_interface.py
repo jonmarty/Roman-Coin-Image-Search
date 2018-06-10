@@ -5,11 +5,13 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from keras import backend as K
 from keras.models import Model
-from LoadModel import load_model, load_image, has_white_border
+import sys
+sys.path.append("modules")
+from load_model import load_model, load_image, has_white_border
 from tqdm import tqdm
 import os
 
-encoder = load_model("encoder1")
+encoder = load_model("encoder")
 encoder.compile(optimizer = "rmsprop", loss = "binary_crossentropy")
 
 filenames = ["Images/" + o for o in os.listdir("Images") if o.endswith(".jpg") and (not o.startswith("."))]
@@ -34,32 +36,9 @@ def search(image, result_size = 50):
     top50 = distances.argsort()[-result_size:][::-1]
     return [filenames[i] for i in top50]
 
-"""
-def search(image):
-    hidden_states = [sess.run(hidden_state(X, mask, W, b),
-                              feed_dict={X: im.reshape(1, pixels),
-                                         mask: np.random.binomial(1, 1 - corruption_level, (1, pixels))})
-                     for im in image_set]
-    query = sess.run(hidden_state(X, mask, W, b),
-                     feed_dict={X: image.reshape(1, pixels),
-                                mask: np.random.binomial(1, 1 - corruption_level, (1, pixels))})
-    starting_state = int(np.random.random() * len(hidden_states))  # choose random starting state
-    best_states = [imported_images[starting_state]]
-    distance = euclidean_distance(query[0],
-                                  hidden_states[starting_state][0])  # Calculate similarity between hidden states
-    for i in range(len(hidden_states)):
-        dist = euclidean_distance(query[0], hidden_states[i][0])
-        if dist <= distance:
-            distance = dist  # as the method progresses, it gets better at identifying similiar images
-            best_states.append(imported_images[i])
-    if len(best_states) > 0:
-        return best_states
-    else:
-        return best_states[len(best_states) - 50:]
-"""
 @bottle.get("/")
 def get_main_page():
-    return open("Pages/Main.html", "r").read()
+    return open("pages/Main.html", "r").read()
 
 @bottle.post("/")
 def perform_search():
@@ -79,7 +58,7 @@ def bottle_search():
     classes = [" ".join(i.split("-")[0:3]).replace("_"," ").replace("(* ", "BC to ").replace("Images/","").strip() for i in results]
     blocks = [{"image":r,"label":c} for r, c in zip(results, classes)]
     blocks = "".join(["<div class=\"gallery\"><img src=\"{}\" width=\"250\" height=\"125\"><div class=\"desc\">{}</div></div>".format(i["image"].replace("Images/",""),i["label"]) for i in blocks])
-    return open("Pages/Search.html","r").read().format(blocks)
+    return open("pages/Search.html","r").read().format(blocks)
 
 #@bottle.get("/static/img/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
 #def img(filepath):
@@ -95,7 +74,7 @@ def image_load(filename):
 
 @bottle.get("/style/<filename>")
 def css_load(filename):
-    return bottle.static_file(filename, root="Style")
+    return bottle.static_file(filename, root="style")
 
 if __name__ == "__main__":
     bottle.run(host = "localhost", port = 1234)
