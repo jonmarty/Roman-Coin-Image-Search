@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from keras import backend as K
 from keras.models import Model
 import sys
-sys.path.append("modules")
+sys.path.append("./modules")
 from load_model import load_model, load_image, has_white_border
 from tqdm import tqdm
 import os
