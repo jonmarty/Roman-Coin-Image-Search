@@ -10,11 +10,18 @@ sys.path.append("./modules")
 from load_model import load_model, load_image, has_white_border
 from tqdm import tqdm
 import os
+import argparse
 
-encoder = load_model("encoder")
+# Determine the keyword to load the encoder
+parser = argparse.ArgumentParser()
+parser.add_argument("-k", "--keyword", type=str)
+args = parser.parse_args()
+keyword = args.keyword
+
+encoder = load_model("models/encoder.%s" % keyword)
 encoder.compile(optimizer = "rmsprop", loss = "binary_crossentropy")
 
-filenames = ["Images/" + o for o in os.listdir("Images") if o.endswith(".jpg") and (not o.startswith("."))]
+filenames = ["images/" + o for o in os.listdir("images") if o.endswith(".jpg") and (not o.startswith("."))]
 
 X = np.asarray([load_image(o) for o in tqdm(filenames)])
 X = X.astype('float32') / 255.

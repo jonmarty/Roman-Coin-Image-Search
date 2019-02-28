@@ -16,10 +16,11 @@ from load_model import load_image
 #hyperparameters
 batch_size = 1
 original_dim = 93750
-latent_dim = 20
+latent_dim = 2
 intermediate_dim = 256
-nb_epoch = 5
+nb_epoch = 1
 epsilon_std = 1.0
+keyword = "2-21-2019"
 
 #encoder
 x = Input(batch_shape = (batch_size, original_dim))
@@ -59,7 +60,7 @@ def vae_loss(x, x_decoded_mean):
 vae = Model(x, x_decoded_mean)
 vae.compile(optimizer='rmsprop', loss=vae_loss) #loss="binary_crossentropy")
 
-filenames = ["Images/" + o for o in os.listdir("Images") if o.endswith(".jpg") and (not o.startswith("."))]
+filenames = ["images/" + o for o in os.listdir("images") if o.endswith(".jpg") and (not o.startswith("."))]
 
 #x_train = np.array([np.asarray(cv2.imread(o)) for o in tqdm(filenames)])
 #print(x_train[0])
@@ -72,10 +73,18 @@ x_train, x_test = train_test_split(X, test_size = 0.5)
 
 vae.fit(x_train, x_train, shuffle = True, epochs = nb_epoch, batch_size = batch_size, validation_data = (x_test, x_test), verbose = 1)
 
-encoder = Model(x, z_mean)
+encoder = Model(x, (z_mean, z_log_var))
 
 encoder_json = encoder.to_json()
-json_file = open("encoder.json", "w")
+json_file = open("models/encoder.%s.json" % keyword, "w")
 json_file.write(encoder_json)
 json_file.close()
-encoder.save_weights("encoder.h5")
+encoder.save_weights("models/encoder.%s.h5" % keyword)
+
+decoder = Model((z_mean, z_log_var), x_decoded_mean)
+
+decoder_json = decoder.to_json()
+json_file = open("models/decoder.%s.json" % keyword, "w")
+json_file.write(decoder_json)
+json_file.close()
+decoder.save_weights("models/decoder.%s.h5" % keyword)
