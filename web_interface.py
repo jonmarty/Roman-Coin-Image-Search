@@ -23,9 +23,11 @@ encoder.compile(optimizer = "rmsprop", loss = "binary_crossentropy")
 
 filenames = ["images/" + o for o in os.listdir("images") if o.endswith(".jpg") and (not o.startswith("."))]
 
-X = np.asarray([load_image(o) for o in tqdm(filenames)])
-X = X.astype('float32') / 255.
-X = X.reshape((len(X), np.prod(X.shape[1:])))
+#X = np.asarray([load_image(o) for o in tqdm(filenames)])
+#X = X.astype('float32') / 255.
+#X = X.reshape((len(X), np.prod(X.shape[1:])))
+
+X = np.load("data/images.npy")
 
 X_encoded = [encoder.predict(np.array([x])) for x in tqdm(X)]
 
@@ -39,13 +41,13 @@ def euclidean_distance(arr1, arr2):
 
 def search(image, result_size = 50):
     encoded_image = encoder.predict(image)
-    distances = np.array([np.linalg.norm(encoded_image-image) for image in X_encoded], dtype="float32")
+    distances = np.array([np.linalg.norm(np.array(encoded_image)-np.array(image)) for image in X_encoded], dtype="float32")
     top50 = distances.argsort()[-result_size:][::-1]
     return [filenames[i] for i in top50]
 
 @bottle.get("/")
 def get_main_page():
-    return open("pages/Main.html", "r").read()
+    return open("pages/main.html", "r").read()
 
 @bottle.post("/")
 def perform_search():
@@ -57,15 +59,16 @@ def perform_search():
 
 @bottle.get("/search")
 def bottle_search():
-    image1 = load_image("image1.jpg", resize = "small")
-    image2 = load_image("image2.jpg", resize = "small")
+    image1 = load_image("image1.jpg", resize = (128,64))
+    image2 = load_image("image2.jpg", resize = (128,64))
     image = np.concatenate((image1, image2), axis=1)
-    image = image.reshape((1, np.prod(image.shape)))
+    #image = image.reshape((1, np.prod(image.shape)))
+    print(image.shape)
     results = search(image, result_size=50)
-    classes = [" ".join(i.split("-")[0:3]).replace("_"," ").replace("(* ", "BC to ").replace("Images/","").strip() for i in results]
+    classes = [" ".join(i.split("-")[0:3]).replace("_"," ").replace("(* ", "BC to ").replace("images/","").strip() for i in results]
     blocks = [{"image":r,"label":c} for r, c in zip(results, classes)]
-    blocks = "".join(["<div class=\"gallery\"><img src=\"{}\" width=\"250\" height=\"125\"><div class=\"desc\">{}</div></div>".format(i["image"].replace("Images/",""),i["label"]) for i in blocks])
-    return open("pages/Search.html","r").read().format(blocks)
+    blocks = "".join(["<div class=\"gallery\"><img src=\"{}\" width=\"250\" height=\"125\"><div class=\"desc\">{}</div></div>".format(i["image"].replace("images/",""),i["label"]) for i in blocks])
+    return open("pages/search.html","r").read().format(blocks)
 
 #@bottle.get("/static/img/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
 #def img(filepath):
@@ -77,7 +80,7 @@ def bottle_search():
 
 @bottle.get("/<filename>")
 def image_load(filename):
-    return bottle.static_file(filename, root="Images")
+    return bottle.static_file(filename, root="images")
 
 @bottle.get("/style/<filename>")
 def css_load(filename):

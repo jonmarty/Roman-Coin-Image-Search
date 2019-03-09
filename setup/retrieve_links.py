@@ -40,5 +40,5 @@ for country in templates.keys():
         if f == 0:
             break
 out = open("data/links.txt", "w")
-out.write("\n".join(links))
+out.write("\n".join(links).encode("utf8"))
 out.close()

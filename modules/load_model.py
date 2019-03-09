@@ -1,5 +1,6 @@
 from keras.models import model_from_json
 from PIL import Image
+import cv2
 import numpy as np
 
 def load_model(model_name):
@@ -7,15 +8,19 @@ def load_model(model_name):
     loaded_model.load_weights(model_name+".h5")
     return loaded_model
 def load_image( infilename, resize = None) :
-    img = Image.open(infilename)
-    img.load()
-    img = img.convert("RGB")
-    if resize == "big":
-        img = img.resize((125,250))
-    elif resize == "small":
-        img = img.resize((125,125))
-    data = np.asarray(img, dtype="float32")
-    return data
+    img = cv2.imread(infilename, 0)
+    if resize is not None:
+        img = cv2.resize(img, resize)
+    #if resize == "big":
+    #    img = img.resize((125,250))
+    #elif resize == "small":
+    #    img = img.resize((125,125))
+    #elif resize is not None:
+    #    img = img.resize(resize)
+    #data = np.asarray(img, dtype="float32")
+    img = np.expand_dims(img, axis=0)
+    img = np.expand_dims(img, axis=-1)
+    return img
 def has_white_border(image, size = 1):
     for f in range(3):
         for i in range(image.shape[0]):
