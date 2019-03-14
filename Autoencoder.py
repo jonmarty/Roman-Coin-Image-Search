@@ -15,8 +15,8 @@ from load_model import load_image
 
 #hyperparameters
 batch_size = 1
-original_dim = 93750
-latent_dim = 2
+original_dim = 31250
+latent_dim = 10
 intermediate_dim = 256
 nb_epoch = 1
 epsilon_std = 1.0
@@ -69,7 +69,7 @@ X = np.asarray([load_image(o) for o in tqdm(filenames)])
 X = X.astype('float32') / 255.
 X = X.reshape((len(X), np.prod(X.shape[1:])))
 
-x_train, x_test = train_test_split(X, test_size = 0.5)
+x_train, x_test = train_test_split(X, test_size = 0.0) #TODO: Change test size back to 0.5
 
 vae.fit(x_train, x_train, shuffle = True, epochs = nb_epoch, batch_size = batch_size, validation_data = (x_test, x_test), verbose = 1)
 

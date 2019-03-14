@@ -59,12 +59,14 @@ def plot_results(models,
         batch_size (int): prediction batch size
         model_name (string): which model is using this function
     """
-
+    
+    folder = "data"
+    
     encoder, decoder = models
     x_test, y_test = data
-    os.makedirs(model_name, exist_ok=True)
+    #os.makedirs(folder, exist_ok=True)
 
-    filename = os.path.join(model_name, "vae_mean.png")
+    filename = os.path.join(folder, "%s.mean.png")
     # display a 2D plot of the digit classes in the latent space
     z_mean, _, _ = encoder.predict(x_test,
                                    batch_size=batch_size)
@@ -76,7 +78,7 @@ def plot_results(models,
     plt.savefig(filename)
     plt.show()
 
-    filename = os.path.join(model_name, "digits_over_latent.png")
+    filename = os.path.join(folder, "%s.digits_over_latent.png")
     # display a 30x30 2D manifold of digits
     n = 30
     digit_size = 28
@@ -141,17 +143,18 @@ x_test = x_test.astype('float32') / 255
 
 # network parameters
 input_shape = (image_size, image_size, 1)
-batch_size = 1
+batch_size = 25
 kernel_size = 18
 filters = 16
 latent_dim = 100
-epochs = 5
+epochs = 1
+n_layers = 3
 
 # VAE model = encoder + decoder
 # build encoder model
 inputs = Input(shape=input_shape, name='encoder_input')
 x = inputs
-for i in range(2):
+for i in range(n_layers):
     filters *= 2
     x = Conv2D(filters=filters,
                kernel_size=kernel_size,
@@ -175,14 +178,14 @@ z = Lambda(sampling, output_shape=(latent_dim,), name='z')([z_mean, z_log_var])
 # instantiate encoder model
 encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
 encoder.summary()
-plot_model(encoder, to_file='vae_cnn_encoder.png', show_shapes=True)
+plot_model(encoder, to_file='data/encoder.%s.png' % args.label, show_shapes=True)
 
 # build decoder model
 latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
 x = Dense(shape[1] * shape[2] * shape[3], activation='relu')(latent_inputs)
 x = Reshape((shape[1], shape[2], shape[3]))(x)
 
-for i in range(2):
+for i in range(n_layers):
     x = Conv2DTranspose(filters=filters,
                         kernel_size=kernel_size,
                         activation='relu',
@@ -199,7 +202,7 @@ outputs = Conv2DTranspose(filters=1,
 # instantiate decoder model
 decoder = Model(latent_inputs, outputs, name='decoder')
 decoder.summary()
-plot_model(decoder, to_file='vae_cnn_decoder.png', show_shapes=True)
+plot_model(decoder, to_file='decoder.%s.png' % args.label, show_shapes=True)
 
 # instantiate VAE model
 outputs = decoder(encoder(inputs)[2])
@@ -230,14 +233,14 @@ if __name__ == '__main__':
     vae.summary()
     
     # Save models to json
-    with open("vae.%s.json" % args.label, 'w') as json_file:
+    with open("data/vae.%s.json" % args.label, 'w') as json_file:
         json_file.write(vae.to_json())
-    with open("encoder.%s.json" % args.label, 'w') as json_file:
+    with open("data/encoder.%s.json" % args.label, 'w') as json_file:
         json_file.write(encoder.to_json())
-    with open("decoder.%s.json" % args.label, 'w') as json_file:
+    with open("data/decoder.%s.json" % args.label, 'w') as json_file:
         json_file.write(decoder.to_json())
     
-    plot_model(vae, to_file='vae_cnn.png', show_shapes=True)
+    plot_model(vae, to_file='vae.%s.png' % args.label, show_shapes=True)
 
     if args.weights:
         vae.load_weights(args.weights)
@@ -247,8 +250,8 @@ if __name__ == '__main__':
                 epochs=epochs,
                 batch_size=batch_size,
                 validation_data=(x_test, None))
-        encoder.save_weights('encoder.%s.h5' % args.label)
-        decoder.save_weights('decoder.%s.h5' % args.label)
-        vae.save_weights('vae.%s.h5' % args.label)
+        encoder.save_weights('data/encoder.%s.h5' % args.label)
+        decoder.save_weights('data/decoder.%s.h5' % args.label)
+        vae.save_weights('data/vae.%s.h5' % args.label)
 
     plot_results(models, data, batch_size=batch_size, model_name="vae_cnn")
