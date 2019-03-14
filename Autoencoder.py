@@ -12,19 +12,33 @@ from sklearn.model_selection import train_test_split
 import sys
 sys.path.append("modules")
 from load_model import load_image
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-l", "--label")
+args = parser.parse_args()
 
 #hyperparameters
-batch_size = 1
+batch_size = 10
 original_dim = 31250
 latent_dim = 10
-intermediate_dim = 256
+#intermediate_dim = 256
+decrease_factor = 5 # Factor by which the size of dense layers decreases each layer
 nb_epoch = 1
+n_layers = 2
 epsilon_std = 1.0
-keyword = "2-21-2019"
+keyword = args.label
 
 #encoder
 x = Input(batch_shape = (batch_size, original_dim))
-h = Dense(intermediate_dim, activation = 'relu')(x)
+dim = original_dim
+dimstore = []
+for i in range(n_layers):
+    dim = dim // decrease_factor
+    dimstore.append(dim)
+    h = Dense(dim, activation = 'relu')(x if i == 0 else h)
+dimstore.append(latent_dim)
+#h = Dense(intermediate_dim, activation = 'relu')(x)
 z_mean = Dense(latent_dim)(h)
 z_log_var = Dense(latent_dim, activation = "softmax")(h)
 
@@ -44,10 +58,13 @@ z = Lambda (sampling, output_shape = (latent_dim,))([z_mean, z_log_var])
 print(z)
 
 #decoder
-decoder_h = Dense(intermediate_dim, activation = 'relu')
-decoder_mean = Dense(original_dim, activation = 'sigmoid')
-h_decoded = decoder_h(z)
-x_decoded_mean = decoder_mean(h_decoded)
+dimstore = list(reversed(dimstore))
+for i in range(n_layers):
+    decoder_h = Dense(dimstore[i], activation = 'relu')(z if i == 0 else decoder_h)
+#decoder_h = Dense(intermediate_dim, activation = 'relu')
+#decoder_mean = Dense(original_dim, activation = 'sigmoid')
+#h_decoded = decoder_h(z)
+x_decoded_mean = Dense(original_dim, activation = 'sigmoid')(decoder_h)#decoder_mean(h_decoded)
 
 print(x_decoded_mean)
 
