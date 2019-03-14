@@ -15,7 +15,12 @@ from load_model import load_image
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", "--label")
+help_ = "Label to refer to the model and all related output files by"
+parser.add_argument("-l", "--label", help=help_)
+help_ = "Number of epochs to train for"
+parser.add_argument("-e", "--epochs", help=help_)
+help_ = "Number of layers in the model"
+parser.add_argument("-n", "--layers", help=help_)
 args = parser.parse_args()
 
 #hyperparameters
@@ -24,8 +29,8 @@ original_dim = 31250
 latent_dim = 10
 #intermediate_dim = 256
 decrease_factor = 5 # Factor by which the size of dense layers decreases each layer
-nb_epoch = 1
-n_layers = 2
+nb_epoch = args.epochs
+n_layers = args.layers
 epsilon_std = 1.0
 keyword = args.label
 

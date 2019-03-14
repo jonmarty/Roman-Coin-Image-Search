@@ -125,6 +125,10 @@ help_ = "Use custom testing data (need to configure training data as well)"
 parser.add_argument("-te", "--test", help=help_)
 help_ = "Label to append to file naames"
 parser.add_argument("-l", "--label", help=help_)
+help_ = "Number of epochs to train for"
+parser.add_argument("-e", "--epochs", help=help_)
+help_ = "Number of layers in model"
+parser.add_argument("-n", "--layers", help=help_)
 args = parser.parse_args()
 if args.train is not None and args.test is not None:
     x_train = np.load(args.train)
@@ -143,12 +147,12 @@ x_test = x_test.astype('float32') / 255
 
 # network parameters
 input_shape = (image_size, image_size, 1)
-batch_size = 25
+batch_size = 1
 kernel_size = 18
 filters = 16
-latent_dim = 100
-epochs = 1
-n_layers = 3
+latent_dim = 10
+epochs = args.epochs
+n_layers = args.layers
 
 # VAE model = encoder + decoder
 # build encoder model
