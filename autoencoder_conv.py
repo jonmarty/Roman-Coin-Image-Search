@@ -126,9 +126,9 @@ parser.add_argument("-te", "--test", help=help_)
 help_ = "Label to append to file naames"
 parser.add_argument("-l", "--label", help=help_)
 help_ = "Number of epochs to train for"
-parser.add_argument("-e", "--epochs", help=help_)
+parser.add_argument("-e", "--epochs", help=help_, type=int)
 help_ = "Number of layers in model"
-parser.add_argument("-n", "--layers", help=help_)
+parser.add_argument("-n", "--layers", help=help_, type=int)
 args = parser.parse_args()
 if args.train is not None and args.test is not None:
     x_train = np.load(args.train)
@@ -150,7 +150,7 @@ input_shape = (image_size, image_size, 1)
 batch_size = 1
 kernel_size = 18
 filters = 16
-latent_dim = 10
+latent_dim = 2
 epochs = args.epochs
 n_layers = args.layers
 
@@ -206,7 +206,7 @@ outputs = Conv2DTranspose(filters=1,
 # instantiate decoder model
 decoder = Model(latent_inputs, outputs, name='decoder')
 decoder.summary()
-plot_model(decoder, to_file='decoder.%s.png' % args.label, show_shapes=True)
+plot_model(decoder, to_file='data/decoder.%s.png' % args.label, show_shapes=True)
 
 # instantiate VAE model
 outputs = decoder(encoder(inputs)[2])
@@ -237,14 +237,14 @@ if __name__ == '__main__':
     vae.summary()
     
     # Save models to json
-    with open("data/vae.%s.json" % args.label, 'w') as json_file:
+    with open("models/vae.%s.json" % args.label, 'w') as json_file:
         json_file.write(vae.to_json())
-    with open("data/encoder.%s.json" % args.label, 'w') as json_file:
+    with open("models/encoder.%s.json" % args.label, 'w') as json_file:
         json_file.write(encoder.to_json())
-    with open("data/decoder.%s.json" % args.label, 'w') as json_file:
+    with open("models/decoder.%s.json" % args.label, 'w') as json_file:
         json_file.write(decoder.to_json())
     
-    plot_model(vae, to_file='vae.%s.png' % args.label, show_shapes=True)
+    plot_model(vae, to_file='data/vae.%s.png' % args.label, show_shapes=True)
 
     if args.weights:
         vae.load_weights(args.weights)
@@ -254,8 +254,8 @@ if __name__ == '__main__':
                 epochs=epochs,
                 batch_size=batch_size,
                 validation_data=(x_test, None))
-        encoder.save_weights('data/encoder.%s.h5' % args.label)
-        decoder.save_weights('data/decoder.%s.h5' % args.label)
-        vae.save_weights('data/vae.%s.h5' % args.label)
+        encoder.save_weights('models/encoder.%s.h5' % args.label)
+        decoder.save_weights('models/decoder.%s.h5' % args.label)
+        vae.save_weights('models/vae.%s.h5' % args.label)
 
     plot_results(models, data, batch_size=batch_size, model_name="vae_cnn")

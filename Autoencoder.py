@@ -18,17 +18,17 @@ parser = argparse.ArgumentParser()
 help_ = "Label to refer to the model and all related output files by"
 parser.add_argument("-l", "--label", help=help_)
 help_ = "Number of epochs to train for"
-parser.add_argument("-e", "--epochs", help=help_)
+parser.add_argument("-e", "--epochs", help=help_, type=int)
 help_ = "Number of layers in the model"
-parser.add_argument("-n", "--layers", help=help_)
+parser.add_argument("-n", "--layers", help=help_, type=int)
 args = parser.parse_args()
 
 #hyperparameters
-batch_size = 10
-original_dim = 31250
+batch_size = 1
+original_dim = 16384
 latent_dim = 10
 #intermediate_dim = 256
-decrease_factor = 5 # Factor by which the size of dense layers decreases each layer
+decrease_factor = 4 # Factor by which the size of dense layers decreases each layer
 nb_epoch = args.epochs
 n_layers = args.layers
 epsilon_std = 1.0
@@ -64,7 +64,8 @@ print(z)
 
 #decoder
 dimstore = list(reversed(dimstore))
-for i in range(n_layers):
+print(dimstore, "DIMSTORE")
+for i in range(n_layers + 1):
     decoder_h = Dense(dimstore[i], activation = 'relu')(z if i == 0 else decoder_h)
 #decoder_h = Dense(intermediate_dim, activation = 'relu')
 #decoder_mean = Dense(original_dim, activation = 'sigmoid')
@@ -80,15 +81,17 @@ def vae_loss(x, x_decoded_mean):
     return xent_loss + kl_loss
 
 vae = Model(x, x_decoded_mean)
+print(vae.summary())
 vae.compile(optimizer='rmsprop', loss=vae_loss) #loss="binary_crossentropy")
 
 filenames = ["images/" + o for o in os.listdir("images") if o.endswith(".jpg") and (not o.startswith("."))]
 
 #x_train = np.array([np.asarray(cv2.imread(o)) for o in tqdm(filenames)])
 #print(x_train[0])
-X = np.asarray([load_image(o) for o in tqdm(filenames)])
+X = np.asarray([load_image(o, resize=(128,128)) for o in tqdm(filenames)])
 
-X = X.astype('float32') / 255.
+X = X.astype('float32') / 256.
+#X = np.load("data/images_over_256.npy")
 X = X.reshape((len(X), np.prod(X.shape[1:])))
 
 x_train, x_test = train_test_split(X, test_size = 0.0) #TODO: Change test size back to 0.5

@@ -19,5 +19,9 @@ data = np.stack(images, axis=0)
 # Add a new dimension to the array to fit the input shape for the model
 data = np.expand_dims(data, axis=-1)
 
+# Divide all values by 256 to bound them [0,1]
+
+data = data / 256.
+
 # Save numpy array to file
 np.save("data/images", data)
